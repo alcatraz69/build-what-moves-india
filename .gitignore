@@ -23,4 +23,5 @@ dist/
 *.log
 
 # SQLite database
-*.db
+# SQLite
+*.db*
