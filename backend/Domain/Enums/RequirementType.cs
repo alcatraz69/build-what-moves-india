@@ -4,6 +4,5 @@ public enum RequirementType
 {
     IdentityProof,
     AddressProof,
-    AgeProof,
     Declaration
 }

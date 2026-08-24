@@ -18,4 +18,9 @@ public interface IJourneyService
        Guid stepId);
 
     Task<LicenceJourney> EvaluateWaitingPeriodAsync(Guid journeyId);
+
+    Task<LicenceJourney> CompleteRequirementAsync(
+    Guid journeyId,
+    Guid stepId,
+    Guid requirementId);
 }

@@ -170,6 +170,35 @@ app.MapPost(
         }
     });
 
+    app.MapPost(
+    "/api/journeys/{journeyId:guid}/steps/{stepId:guid}/requirements/{requirementId:guid}/complete",
+    async (
+        Guid journeyId,
+        Guid stepId,
+        Guid requirementId,
+        IJourneyService journeyService) =>
+    {
+        try
+        {
+            var journey = await journeyService.CompleteRequirementAsync(
+                journeyId,
+                stepId,
+                requirementId
+            );
+
+            return Results.Ok(
+                JourneyMapper.ToResponse(journey)
+            );
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+    });
+
 app.UseCors("Frontend");
 
 app.UseHttpsRedirection();

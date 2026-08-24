@@ -50,6 +50,13 @@ public class JourneyService : IJourneyService
             return existingJourney;
         }
 
+        var steps = CreateJourneySteps();
+
+        foreach (var step in steps)
+        {
+            step.Requirements = JourneyRequirementFactory.CreateFor(step.Type);
+        }
+
         var journey = new LicenceJourney
         {
             Id = Guid.NewGuid(),
@@ -59,7 +66,7 @@ public class JourneyService : IJourneyService
             CurrentStep = JourneyStepType.LlApplication,
             CreatedAt = _clock.UtcNow,
             UpdatedAt = _clock.UtcNow,
-            Steps = CreateJourneySteps()
+            Steps = steps
         };
 
         _dbContext.LicenceJourneys.Add(journey);
@@ -108,6 +115,8 @@ public class JourneyService : IJourneyService
             })
             .ToList();
     }
+
+
 
     private static JourneyResponse MapToResponse(LicenceJourney journey)
     {
@@ -185,6 +194,17 @@ public class JourneyService : IJourneyService
                 "The current journey step cannot be completed.");
         }
 
+        var hasIncompleteRequiredRequirements = currentStep.Requirements
+    .Any(requirement =>
+        requirement.Required &&
+        requirement.Status != RequirementStatus.Completed);
+
+        if (hasIncompleteRequiredRequirements)
+        {
+            throw new InvalidOperationException(
+                "Required journey step requirements are incomplete.");
+        }
+
         if (result == JourneyStepResult.Fail)
         {
             currentStep.Status = JourneyStepStatus.Failed;
@@ -223,6 +243,61 @@ public class JourneyService : IJourneyService
 
         return journey;
     }
+
+    public async Task<LicenceJourney> CompleteRequirementAsync(
+    Guid journeyId,
+    Guid stepId,
+    Guid requirementId)
+{
+    var journey = await _dbContext.LicenceJourneys
+        .Include(x => x.Steps)
+            .ThenInclude(x => x.Requirements)
+        .FirstOrDefaultAsync(x => x.Id == journeyId);
+
+    if (journey is null)
+    {
+        throw new InvalidOperationException(
+            "Journey not found.");
+    }
+
+    var step = journey.Steps
+        .FirstOrDefault(x => x.Id == stepId);
+
+    if (step is null)
+    {
+        throw new InvalidOperationException(
+            "Journey step not found.");
+    }
+
+    var requirement = step.Requirements
+        .FirstOrDefault(x => x.Id == requirementId);
+
+    if (requirement is null)
+    {
+        throw new InvalidOperationException(
+            "Journey requirement not found.");
+    }
+
+    if (step.Type != journey.CurrentStep)
+{
+    throw new InvalidOperationException(
+        "Only requirements for the current journey step can be completed.");
+}
+
+    if (requirement.Status == RequirementStatus.NotApplicable)
+    {
+        throw new InvalidOperationException(
+            "This requirement is not applicable.");
+    }
+
+    requirement.Status = RequirementStatus.Completed;
+
+    journey.UpdatedAt = _clock.UtcNow;
+
+    await _dbContext.SaveChangesAsync();
+
+    return journey;
+}
     public async Task<LicenceJourney> RetryStepAsync(
         Guid journeyId,
         Guid stepId)
@@ -269,43 +344,43 @@ public class JourneyService : IJourneyService
         return journey;
     }
     public async Task<LicenceJourney> EvaluateWaitingPeriodAsync(Guid journeyId)
-{
-    var journey = await _dbContext.LicenceJourneys
-        .Include(x => x.Steps)
-            .ThenInclude(x => x.Requirements)
-        .FirstOrDefaultAsync(x => x.Id == journeyId);
-
-    if (journey is null)
     {
-        throw new InvalidOperationException("Journey not found.");
-    }
+        var journey = await _dbContext.LicenceJourneys
+            .Include(x => x.Steps)
+                .ThenInclude(x => x.Requirements)
+            .FirstOrDefaultAsync(x => x.Id == journeyId);
 
-    if (journey.LearnerLicenceIssuedAt is null)
-    {
+        if (journey is null)
+        {
+            throw new InvalidOperationException("Journey not found.");
+        }
+
+        if (journey.LearnerLicenceIssuedAt is null)
+        {
+            return journey;
+        }
+
+        var waitingPeriod = journey.Steps
+            .Single(x => x.Type == JourneyStepType.WaitingPeriod);
+
+        var dlApplication = journey.Steps
+            .Single(x => x.Type == JourneyStepType.DlApplication);
+
+        var eligibleDate = journey.LearnerLicenceIssuedAt.Value.AddDays(30);
+
+        if (_clock.UtcNow >= eligibleDate &&
+            waitingPeriod.Status == JourneyStepStatus.Available)
+        {
+            waitingPeriod.Status = JourneyStepStatus.Completed;
+            dlApplication.Status = JourneyStepStatus.Available;
+
+            journey.CurrentStep = JourneyStepType.DlApplication;
+            journey.Status = JourneyStatus.InProgress;
+            journey.UpdatedAt = _clock.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+        }
+
         return journey;
     }
-
-    var waitingPeriod = journey.Steps
-        .Single(x => x.Type == JourneyStepType.WaitingPeriod);
-
-    var dlApplication = journey.Steps
-        .Single(x => x.Type == JourneyStepType.DlApplication);
-
-    var eligibleDate = journey.LearnerLicenceIssuedAt.Value.AddDays(30);
-
-    if (_clock.UtcNow >= eligibleDate &&
-        waitingPeriod.Status == JourneyStepStatus.Available)
-    {
-        waitingPeriod.Status = JourneyStepStatus.Completed;
-        dlApplication.Status = JourneyStepStatus.Available;
-
-        journey.CurrentStep = JourneyStepType.DlApplication;
-        journey.Status = JourneyStatus.InProgress;
-        journey.UpdatedAt = _clock.UtcNow;
-
-        await _dbContext.SaveChangesAsync();
-    }
-
-    return journey;
-}
 }
