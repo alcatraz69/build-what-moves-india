@@ -17,6 +17,7 @@ public class LicenceJourney
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+    public DateTime? LearnerLicenceIssuedAt { get; set; }
 
     public Applicant Applicant { get; set; } = null!;
 

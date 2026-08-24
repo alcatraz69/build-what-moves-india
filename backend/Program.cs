@@ -3,6 +3,8 @@ using backend.Application.Rules;
 using backend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using backend.Application.Journeys;
+using backend.Application.Time;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddScoped<IJourneyService, JourneyService>();
+builder.Services.AddSingleton<IClock, SystemClock>();
+
 var app = builder.Build();
 
 app.MapPost("/api/applicants", async (
@@ -53,6 +58,117 @@ app.MapGet("/api/applicants/{id:guid}", async (
         ? Results.NotFound()
         : Results.Ok(result);
 });
+
+app.MapPost("/api/applicants/{applicantId:guid}/journey", async (
+    Guid applicantId,
+    IJourneyService journeyService) =>
+{
+    try
+    {
+        var journey = await journeyService.CreateAsync(applicantId);
+
+        return Results.Ok(JourneyMapper.ToResponse(journey));
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new
+        {
+            message = ex.Message
+        });
+    }
+});
+
+app.MapGet("/api/applicants/{applicantId:guid}/journey", async (
+    Guid applicantId,
+    IJourneyService journeyService) =>
+{
+    var journey = await journeyService.GetByApplicantIdAsync(applicantId);
+
+    return journey is null
+        ? Results.NotFound()
+        : Results.Ok(JourneyMapper.ToResponse(journey));
+});
+
+app.MapPost(
+    "/api/journeys/{journeyId:guid}/steps/{stepId:guid}/complete",
+    async (
+        Guid journeyId,
+        Guid stepId,
+        CompleteStepRequest request,
+        IJourneyService journeyService) =>
+    {
+        try
+        {
+            var journey = await journeyService.CompleteStepAsync(
+                journeyId,
+                stepId,
+                request.Result
+            );
+
+            return Results.Ok(
+                JourneyMapper.ToResponse(journey)
+            );
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+    });
+
+    app.MapPost(
+    "/api/journeys/{journeyId:guid}/steps/{stepId:guid}/retry",
+    async (
+        Guid journeyId,
+        Guid stepId,
+        IJourneyService journeyService) =>
+    {
+        try
+        {
+            var journey = await journeyService.RetryStepAsync(
+                journeyId,
+                stepId
+            );
+
+            return Results.Ok(
+                JourneyMapper.ToResponse(journey)
+            );
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+    });
+
+    app.MapPost(
+    "/api/journeys/{journeyId:guid}/waiting-period/evaluate",
+    async (
+        Guid journeyId,
+        IJourneyService journeyService) =>
+    {
+        try
+        {
+            var journey = await journeyService.EvaluateWaitingPeriodAsync(
+                journeyId
+            );
+
+            return Results.Ok(
+                JourneyMapper.ToResponse(journey)
+            );
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+    });
 
 app.UseCors("Frontend");
 
