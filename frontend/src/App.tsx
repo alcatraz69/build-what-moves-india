@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { ApplicantPage } from "./components/Applicant/ApplicantPage";
 import { JourneyHeader } from "./components/Journey/JourneyHeader";
 import { JourneyProgress } from "./components/Journey/JourneyProgress";
 import { JourneyStep } from "./components/Journey/JourneyStep";
@@ -9,37 +10,47 @@ import {
 } from "./services/journeyService";
 import type { Journey } from "./types/journey";
 
-const APPLICANT_ID = "c006e14c-c7cc-46f8-bd97-6e3f6c4901ca";
-
 function App() {
+  const [applicantId, setApplicantId] = useState<string | null>(() =>
+    localStorage.getItem("applicantId"),
+  );
+
   const [journey, setJourney] = useState<Journey | null>(null);
-  const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
+
   const [completingRequirementId, setCompletingRequirementId] = useState<
     string | null
   >(null);
+
   const [completingStepId, setCompletingStepId] = useState<string | null>(null);
 
   useEffect(() => {
-    getJourney(APPLICANT_ID)
-      .then(setJourney)
-      .catch((err) => {
-        setError(err instanceof Error ? err.message : "Something went wrong.");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    if (!applicantId) {
+      return;
+    }
 
-  if (loading) {
-    return <div>Loading your journey...</div>;
-  }
+    const restoreJourney = async () => {
+      try {
+        setError(null);
 
-  if (error || !journey) {
-    return <div>{error ?? "Journey not found."}</div>;
-  }
+        const restoredJourney = await getJourney(applicantId);
 
-  const completedSteps = journey.steps.filter(
-    (step) => step.status === "Completed",
-  ).length;
+        setJourney(restoredJourney);
+      } catch (err) {
+        localStorage.removeItem("applicantId");
+        setApplicantId(null);
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to restore your journey.",
+        );
+      }
+    };
+
+    restoreJourney();
+  }, [applicantId]);
 
   const handleCompleteRequirement = async (requirementId: string) => {
     if (!journey) {
@@ -56,6 +67,7 @@ function App() {
 
     try {
       setCompletingRequirementId(requirementId);
+      setError(null);
 
       const updatedJourney = await completeRequirement(
         journey.id,
@@ -92,6 +104,52 @@ function App() {
     }
   };
 
+  const handleBackToHome = () => {
+    localStorage.removeItem("applicantId");
+    setApplicantId(null);
+    setJourney(null);
+    setError(null);
+  };
+
+  if (error) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50">
+        <p className="text-red-600">{error}</p>
+      </main>
+    );
+  }
+
+  if (applicantId && !journey) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50">
+        <p className="text-slate-500">Restoring your journey...</p>
+      </main>
+    );
+  }
+
+  if (!applicantId && !journey) {
+    return (
+      <ApplicantPage
+        onJourneyCreated={(createdJourney) => {
+          localStorage.setItem("applicantId", createdJourney.applicantId);
+
+          setApplicantId(createdJourney.applicantId);
+          setJourney(createdJourney);
+        }}
+      />
+    );
+  }
+
+  if (!journey) {
+    return null;
+  }
+
+  const isJourneyCompleted = journey.status === "Completed";
+
+  const completedSteps = journey.steps.filter(
+    (step) => step.status === "Completed",
+  ).length;
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
       <section className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
@@ -115,6 +173,28 @@ function App() {
             />
           ))}
         </div>
+
+         {isJourneyCompleted && (
+          <div className="mt-8 rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
+            <div className="text-3xl">🎉</div>
+
+            <h2 className="mt-3 text-lg font-semibold text-emerald-900">
+              Journey completed
+            </h2>
+
+            <p className="mt-1 text-sm text-emerald-700">
+              You have completed your driving licence journey.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleBackToHome}
+              className="mt-5 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Back to Home
+            </button>
+          </div>
+        )}
       </section>
     </main>
   );

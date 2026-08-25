@@ -21,6 +21,9 @@ export function JourneyStep({
   const isCompleted = step.status === "Completed";
   const isAvailable = step.status === "Available";
   const isLocked = step.status === "Locked";
+  const hasIncompleteRequirements = step.requirements.some(
+    (requirement) => requirement.required && requirement.status !== "Completed",
+  );
 
   return (
     <article className="flex gap-4 border-t border-slate-100 py-5">
@@ -68,16 +71,18 @@ export function JourneyStep({
           </span>
         </div>
 
-        <RequirementList
-          requirements={step.requirements}
-          onComplete={onCompleteRequirement}
-          completingRequirementId={completingRequirementId}
-        />
+        {!isLocked && (
+          <RequirementList
+            requirements={step.requirements}
+            onComplete={onCompleteRequirement}
+            completingRequirementId={completingRequirementId}
+          />
+        )}
 
         {isAvailable && (
           <button
             type="button"
-            disabled={completingStep}
+            disabled={completingStep || hasIncompleteRequirements}
             onClick={onCompleteStep}
             className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
