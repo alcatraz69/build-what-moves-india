@@ -6,7 +6,9 @@ import { JourneyStep } from "./components/Journey/JourneyStep";
 import {
   completeRequirement,
   completeStep,
+  evaluateWaitingPeriod,
   getJourney,
+  retryStep,
 } from "./services/journeyService";
 import type { Journey } from "./types/journey";
 
@@ -25,6 +27,8 @@ function App() {
 
   const [completingStepId, setCompletingStepId] = useState<string | null>(null);
 
+  const [retryingStepId, setRetryingStepId] = useState<string | null>(null);
+
   useEffect(() => {
     if (!applicantId) {
       return;
@@ -36,7 +40,15 @@ function App() {
 
         const restoredJourney = await getJourney(applicantId);
 
-        setJourney(restoredJourney);
+        if (restoredJourney.currentStep === "WaitingPeriod") {
+          const evaluatedJourney = await evaluateWaitingPeriod(
+            restoredJourney.id,
+          );
+
+          setJourney(evaluatedJourney);
+        } else {
+          setJourney(restoredJourney);
+        }
       } catch (err) {
         localStorage.removeItem("applicantId");
         setApplicantId(null);
@@ -104,6 +116,27 @@ function App() {
     }
   };
 
+  const handleRetryStep = async (stepId: string) => {
+    if (!journey) {
+      return;
+    }
+
+    try {
+      setRetryingStepId(stepId);
+      setError(null);
+
+      const updatedJourney = await retryStep(journey.id, stepId);
+
+      setJourney(updatedJourney);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to retry journey step.",
+      );
+    } finally {
+      setRetryingStepId(null);
+    }
+  };
+
   const handleBackToHome = () => {
     localStorage.removeItem("applicantId");
     setApplicantId(null);
@@ -150,10 +183,17 @@ function App() {
     (step) => step.status === "Completed",
   ).length;
 
+  const currentStep = journey.steps.find(
+    (step) => step.type === journey.currentStep,
+  );
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
       <section className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
-        <JourneyHeader status={journey.status} />
+        <JourneyHeader
+          status={journey.status}
+          currentStepTitle={currentStep?.title ?? "Journey completed"}
+        />
 
         <JourneyProgress
           completedSteps={completedSteps}
@@ -166,15 +206,18 @@ function App() {
               key={step.id}
               step={step}
               index={index}
+              learnerLicenceIssuedAt={journey.learnerLicenceIssuedAt}
               onCompleteRequirement={handleCompleteRequirement}
               completingRequirementId={completingRequirementId}
               onCompleteStep={() => handleCompleteStep(step.id)}
               completingStep={completingStepId === step.id}
+              onRetryStep={() => handleRetryStep(step.id)}
+              retryingStep={retryingStepId === step.id}
             />
           ))}
         </div>
 
-         {isJourneyCompleted && (
+        {isJourneyCompleted && (
           <div className="mt-8 rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
             <div className="text-3xl">🎉</div>
 

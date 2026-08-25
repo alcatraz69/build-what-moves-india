@@ -13,14 +13,20 @@ public class JourneyService : IJourneyService
     private readonly IEligibilityService _eligibilityService;
     private readonly IClock _clock;
 
+    private readonly int _waitingPeriodDays;
+
     public JourneyService(
         AppDbContext dbContext,
         IEligibilityService eligibilityService,
-        IClock clock)
+        IClock clock,
+        IConfiguration configuration)
     {
         _dbContext = dbContext;
         _eligibilityService = eligibilityService;
         _clock = clock;
+
+        _waitingPeriodDays =
+            configuration.GetValue<int>("Journey:WaitingPeriodDays", 30);
     }
 
     public async Task<LicenceJourney> CreateAsync(Guid applicantId)
@@ -248,56 +254,56 @@ public class JourneyService : IJourneyService
     Guid journeyId,
     Guid stepId,
     Guid requirementId)
-{
-    var journey = await _dbContext.LicenceJourneys
-        .Include(x => x.Steps)
-            .ThenInclude(x => x.Requirements)
-        .FirstOrDefaultAsync(x => x.Id == journeyId);
-
-    if (journey is null)
     {
-        throw new InvalidOperationException(
-            "Journey not found.");
+        var journey = await _dbContext.LicenceJourneys
+            .Include(x => x.Steps)
+                .ThenInclude(x => x.Requirements)
+            .FirstOrDefaultAsync(x => x.Id == journeyId);
+
+        if (journey is null)
+        {
+            throw new InvalidOperationException(
+                "Journey not found.");
+        }
+
+        var step = journey.Steps
+            .FirstOrDefault(x => x.Id == stepId);
+
+        if (step is null)
+        {
+            throw new InvalidOperationException(
+                "Journey step not found.");
+        }
+
+        var requirement = step.Requirements
+            .FirstOrDefault(x => x.Id == requirementId);
+
+        if (requirement is null)
+        {
+            throw new InvalidOperationException(
+                "Journey requirement not found.");
+        }
+
+        if (step.Type != journey.CurrentStep)
+        {
+            throw new InvalidOperationException(
+                "Only requirements for the current journey step can be completed.");
+        }
+
+        if (requirement.Status == RequirementStatus.NotApplicable)
+        {
+            throw new InvalidOperationException(
+                "This requirement is not applicable.");
+        }
+
+        requirement.Status = RequirementStatus.Completed;
+
+        journey.UpdatedAt = _clock.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
+
+        return journey;
     }
-
-    var step = journey.Steps
-        .FirstOrDefault(x => x.Id == stepId);
-
-    if (step is null)
-    {
-        throw new InvalidOperationException(
-            "Journey step not found.");
-    }
-
-    var requirement = step.Requirements
-        .FirstOrDefault(x => x.Id == requirementId);
-
-    if (requirement is null)
-    {
-        throw new InvalidOperationException(
-            "Journey requirement not found.");
-    }
-
-    if (step.Type != journey.CurrentStep)
-{
-    throw new InvalidOperationException(
-        "Only requirements for the current journey step can be completed.");
-}
-
-    if (requirement.Status == RequirementStatus.NotApplicable)
-    {
-        throw new InvalidOperationException(
-            "This requirement is not applicable.");
-    }
-
-    requirement.Status = RequirementStatus.Completed;
-
-    journey.UpdatedAt = _clock.UtcNow;
-
-    await _dbContext.SaveChangesAsync();
-
-    return journey;
-}
     public async Task<LicenceJourney> RetryStepAsync(
         Guid journeyId,
         Guid stepId)
@@ -366,7 +372,8 @@ public class JourneyService : IJourneyService
         var dlApplication = journey.Steps
             .Single(x => x.Type == JourneyStepType.DlApplication);
 
-        var eligibleDate = journey.LearnerLicenceIssuedAt.Value.AddDays(30);
+        var eligibleDate = journey.LearnerLicenceIssuedAt.Value
+    .AddDays(_waitingPeriodDays);
 
         if (_clock.UtcNow >= eligibleDate &&
             waitingPeriod.Status == JourneyStepStatus.Available)

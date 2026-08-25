@@ -15,6 +15,7 @@ public static class JourneyMapper
             CurrentStep = journey.CurrentStep,
             CreatedAt = journey.CreatedAt,
             UpdatedAt = journey.UpdatedAt,
+            LearnerLicenceIssuedAt = journey.LearnerLicenceIssuedAt,
 
             Steps = journey.Steps
                 .OrderBy(step => step.Order)

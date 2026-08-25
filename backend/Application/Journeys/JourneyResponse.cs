@@ -17,6 +17,7 @@ public class JourneyResponse
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+    public DateTime? LearnerLicenceIssuedAt { get; set; }
 
     public List<JourneyStepResponse> Steps { get; set; } = [];
 }

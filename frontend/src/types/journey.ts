@@ -37,5 +37,6 @@ export type Journey = {
   currentStep: string;
   createdAt: string;
   updatedAt: string;
+  learnerLicenceIssuedAt: string | null;
   steps: JourneyStep[];
 };
