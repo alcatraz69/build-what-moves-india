@@ -43,6 +43,12 @@ builder.Services.AddSingleton<IClock, SystemClock>();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 app.MapPost("/api/applicants", async (
     CreateApplicantRequest request,
     ApplicantService applicantService) =>
