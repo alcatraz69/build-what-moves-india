@@ -23,12 +23,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IEligibilityService, EligibilityService>();
 builder.Services.AddScoped<ApplicantService>();
 
+var frontendOrigin =
+    builder.Configuration["FrontendOrigin"]
+    ?? "http://localhost:5173";
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(frontendOrigin)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
