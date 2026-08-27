@@ -1,9 +1,14 @@
 type WaitingPeriodProps = {
   learnerLicenceIssuedAt: string | null;
+  onComplete: () => void;
+  completing: boolean;
+  onSimulate: () => void;
 };
 
 export function WaitingPeriod({
   learnerLicenceIssuedAt,
+  completing,
+  onSimulate,
 }: WaitingPeriodProps) {
   if (!learnerLicenceIssuedAt) {
     return (
@@ -50,17 +55,12 @@ export function WaitingPeriod({
 
           <p className="mt-1 text-sm text-slate-600">
             Your learner's licence was issued on{" "}
-            <span className="font-semibold text-slate-900">
-              {issuedDate}
-            </span>
-            .
+            <span className="font-semibold text-slate-900">{issuedDate}</span>.
           </p>
         </div>
 
         <div className="shrink-0 rounded-xl bg-blue-50 px-5 py-3 text-center">
-          <p className="text-2xl font-bold text-blue-700">
-            {daysRemaining}
-          </p>
+          <p className="text-2xl font-bold text-blue-700">{daysRemaining}</p>
 
           <p className="text-xs font-semibold text-blue-600">
             {daysRemaining === 1 ? "day remaining" : "days remaining"}
@@ -100,17 +100,28 @@ export function WaitingPeriod({
       {daysRemaining > 0 ? (
         <p className="mt-5 text-sm text-slate-600">
           You can apply for your Driving Licence after{" "}
-          <span className="font-semibold text-slate-900">
-            {eligibleDate}
-          </span>
-          .
+          <span className="font-semibold text-slate-900">{eligibleDate}</span>.
         </p>
       ) : (
-        <p className="mt-5 text-sm font-semibold text-emerald-700">
-          Your waiting period is complete. You can now apply for your Driving
-          Licence.
-        </p>
+        <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-sm font-semibold text-emerald-800">
+            Your waiting period is complete.
+          </p>
+
+          <p className="mt-1 text-sm text-emerald-700">
+            You can now continue to your Driving Licence application.
+          </p>
+        </div>
       )}
+
+      <button
+        type="button"
+        onClick={onSimulate}
+        disabled={completing}
+        className="mt-4 rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {completing ? "Simulating..." : "Simulate 30-day wait →"}
+      </button>
     </div>
   );
 }

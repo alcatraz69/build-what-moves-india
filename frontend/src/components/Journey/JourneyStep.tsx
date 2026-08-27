@@ -12,6 +12,7 @@ type JourneyStepProps = {
   completingStep: boolean;
   onRetryStep: () => void;
   retryingStep: boolean;
+  onSimulateWaitingPeriod: () => void;
 };
 
 type StepPresentation = "action" | "requirements" | "status";
@@ -68,6 +69,7 @@ export function JourneyStep({
   completingStep,
   onRetryStep,
   retryingStep,
+  onSimulateWaitingPeriod,
 }: JourneyStepProps) {
   const isCompleted = step.status === "Completed";
   const isAvailable = step.status === "Available";
@@ -175,7 +177,12 @@ export function JourneyStep({
         {isAvailable &&
           presentation === "status" &&
           step.type === "WaitingPeriod" && (
-            <WaitingPeriod learnerLicenceIssuedAt={learnerLicenceIssuedAt} />
+            <WaitingPeriod
+              learnerLicenceIssuedAt={learnerLicenceIssuedAt}
+              onComplete={onCompleteStep}
+              completing={completingStep}
+              onSimulate={onSimulateWaitingPeriod}
+            />
           )}
 
         {isAvailable && presentation !== "status" && (

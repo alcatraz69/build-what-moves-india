@@ -117,6 +117,26 @@ function App() {
     }
   };
 
+  const handleSimulateWaitingPeriod = async () => {
+    if (!journey) {
+      return;
+    }
+
+    try {
+      setError(null);
+
+      const updatedJourney = await evaluateWaitingPeriod(journey.id);
+
+      setJourney(updatedJourney);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to simulate waiting period.",
+      );
+    }
+  };
+
   const handleRetryStep = async (stepId: string) => {
     if (!journey) {
       return;
@@ -214,6 +234,7 @@ function App() {
               completingRequirementId={completingRequirementId}
               onCompleteStep={() => handleCompleteStep(step.id)}
               completingStep={completingStepId === step.id}
+              onSimulateWaitingPeriod={handleSimulateWaitingPeriod}
               onRetryStep={() => handleRetryStep(step.id)}
               retryingStep={retryingStepId === step.id}
             />
