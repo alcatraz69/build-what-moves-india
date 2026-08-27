@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using backend.Application.Journeys;
 using backend.Application.Time;
+using backend.Application.Assistant;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IJourneyService, JourneyService>();
 builder.Services.AddSingleton<IClock, SystemClock>();
+builder.Services.AddHttpClient<IJourneyAssistantService, JourneyAssistantService>();
 
 var app = builder.Build();
 
@@ -97,6 +99,46 @@ app.MapGet("/api/applicants/{applicantId:guid}/journey", async (
     return journey is null
         ? Results.NotFound()
         : Results.Ok(JourneyMapper.ToResponse(journey));
+});
+
+app.MapPost("/api/applicants/{applicantId:guid}/journey/assistant", async (
+    Guid applicantId,
+    JourneyAssistantRequest request,
+    IJourneyAssistantService assistantService,
+    CancellationToken cancellationToken) =>
+{
+    try
+    {
+        var result = await assistantService.AskAsync(
+            applicantId,
+            request,
+            cancellationToken);
+
+        return result is null
+            ? Results.NotFound()
+            : Results.Ok(result);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new
+        {
+            message = ex.Message
+        });
+    }
+    catch (JourneyAssistantConfigurationException)
+    {
+        return Results.Problem(
+            title: "Assistant configuration error",
+            detail: "The journey assistant is not configured.",
+            statusCode: StatusCodes.Status500InternalServerError);
+    }
+    catch (JourneyAssistantUpstreamException)
+    {
+        return Results.Problem(
+            title: "Assistant unavailable",
+            detail: "The journey assistant is temporarily unavailable.",
+            statusCode: StatusCodes.Status502BadGateway);
+    }
 });
 
 app.MapPost(

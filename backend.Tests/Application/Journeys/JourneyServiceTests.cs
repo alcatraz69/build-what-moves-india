@@ -5,6 +5,7 @@ using backend.Domain.Enums;
 using backend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using backend.Application.Time;
+using Microsoft.Extensions.Configuration;
 
 namespace backend.Tests.Application.Journeys;
 
@@ -39,7 +40,7 @@ public class JourneyServiceTests
 
         var eligibilityService = new EligibilityService();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
     dbContext,
     eligibilityService,
     new TestClock()
@@ -109,7 +110,7 @@ public class JourneyServiceTests
 
         var eligibilityService = new EligibilityService();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
         dbContext,
         eligibilityService,
         new TestClock()
@@ -153,7 +154,7 @@ public class JourneyServiceTests
 
         var eligibilityService = new EligibilityService();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
          dbContext,
          eligibilityService,
          new TestClock()
@@ -197,7 +198,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
         dbContext,
         new EligibilityService(),
         new TestClock()
@@ -270,7 +271,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             new TestClock()
@@ -321,7 +322,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             new TestClock()
@@ -404,7 +405,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
         dbContext,
         new EligibilityService(),
         new TestClock()
@@ -484,7 +485,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
         dbContext,
         new EligibilityService(),
         new TestClock()
@@ -552,6 +553,19 @@ public class JourneyServiceTests
     {
         public DateTime UtcNow { get; set; } = new(2026, 8, 23);
     }
+
+    private static JourneyService CreateJourneyService(
+        AppDbContext dbContext,
+        IEligibilityService eligibilityService,
+        IClock clock)
+    {
+        return new JourneyService(
+            dbContext,
+            eligibilityService,
+            clock,
+            new ConfigurationBuilder().Build());
+    }
+
     [Fact]
     public async Task CompleteStepAsync_WhenLlIssued_ShouldRecordIssuanceDate()
     {
@@ -583,7 +597,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             clock
@@ -653,7 +667,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             clock
@@ -737,7 +751,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             clock
@@ -831,7 +845,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             clock
@@ -963,7 +977,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             clock
@@ -1108,7 +1122,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             clock
@@ -1180,7 +1194,7 @@ public class JourneyServiceTests
             dbContext.Applicants.Add(applicant);
             await dbContext.SaveChangesAsync();
 
-            var journeyService = new JourneyService(
+            var journeyService = CreateJourneyService(
                 dbContext,
                 new EligibilityService(),
                 new TestClock()
@@ -1205,7 +1219,7 @@ public class JourneyServiceTests
         // Second context — reload from database
         await using (var dbContext = new AppDbContext(options))
         {
-            var journeyService = new JourneyService(
+            var journeyService = CreateJourneyService(
                 dbContext,
                 new EligibilityService(),
                 new TestClock()
@@ -1269,7 +1283,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             new TestClock()
@@ -1325,7 +1339,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             new TestClock()
@@ -1396,7 +1410,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             new TestClock()
@@ -1464,7 +1478,7 @@ public class JourneyServiceTests
         dbContext.Applicants.Add(applicant);
         await dbContext.SaveChangesAsync();
 
-        var journeyService = new JourneyService(
+        var journeyService = CreateJourneyService(
             dbContext,
             new EligibilityService(),
             new TestClock()

@@ -3,6 +3,7 @@ import { ApplicantPage } from "./components/Applicant/ApplicantPage";
 import { JourneyHeader } from "./components/Journey/JourneyHeader";
 import { JourneyProgress } from "./components/Journey/JourneyProgress";
 import { JourneyStep } from "./components/Journey/JourneyStep";
+import { JourneyAssistant } from "./components/Journey/JourneyAssistant";
 import {
   completeRequirement,
   completeStep,
@@ -199,6 +200,8 @@ function App() {
           completedSteps={completedSteps}
           totalSteps={journey.steps.length}
         />
+
+        <JourneyAssistant applicantId={journey.applicantId} />
 
         <div className="mt-8">
           {journey.steps.map((step, index) => (

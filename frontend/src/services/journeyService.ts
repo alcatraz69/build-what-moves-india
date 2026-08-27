@@ -1,4 +1,8 @@
 import type { Journey } from '../types/journey';
+import type {
+  JourneyAssistantRequest,
+  JourneyAssistantResponse,
+} from '../types/assistant';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5204';
@@ -12,6 +16,32 @@ export const getJourney = async (
 
   if (!response.ok) {
     throw new Error('Failed to load journey.');
+  }
+
+  return response.json();
+};
+
+export const askJourneyAssistant = async (
+  applicantId: string,
+  request: JourneyAssistantRequest,
+): Promise<JourneyAssistantResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/applicants/${applicantId}/journey/assistant`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+
+    throw new Error(
+      error?.message ?? 'Failed to get an assistant response.',
+    );
   }
 
   return response.json();
