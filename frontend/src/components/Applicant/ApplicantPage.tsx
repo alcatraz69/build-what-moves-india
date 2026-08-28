@@ -74,7 +74,7 @@ export function ApplicantPage({ onJourneyCreated }: ApplicantPageProps) {
       <section className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
         <div className="mb-8">
           <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-slate-500">
-            Build What Moves India
+            Saarathi 2.0
           </p>
 
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
