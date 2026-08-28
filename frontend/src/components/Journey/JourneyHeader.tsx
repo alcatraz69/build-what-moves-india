@@ -7,42 +7,60 @@ export function JourneyHeader({
   status,
   currentStepTitle,
 }: JourneyHeaderProps) {
+  const isCompleted = status === "Completed";
+
   return (
-    <header className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-slate-500">
-          Licence Journey
-        </p>
+    <header className="border-b border-slate-100 pb-7">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+              Saarathi 2.0
+            </span>
 
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-          Get your driving licence
-        </h1>
+            <span className="text-slate-300">•</span>
 
-        <p className="mt-2 text-slate-500">
-          Complete each step to move through your licence journey.
-        </p>
+            <span className="text-sm font-medium text-slate-400">
+              Licence Journey
+            </span>
+          </div>
 
-        <div className="mt-5">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+            Your driving licence journey
+          </h1>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+            Complete each step to move through your licence application.
+          </p>
+        </div>
+
+        <span
+          className={[
+            "w-fit shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold",
+            isCompleted
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-blue-50 text-blue-700",
+          ].join(" ")}
+        >
+          {status}
+        </span>
+      </div>
+
+      {!isCompleted && (
+        <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             Current step
           </p>
 
-          <p className="mt-1 text-base font-semibold text-slate-900">
-            {currentStepTitle}
-          </p>
-        </div>
-      </div>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-blue-600" />
 
-      <span
-        className={[
-          "w-fit rounded-full px-3 py-1.5 text-sm font-semibold",
-          status === "Completed"
-            ? "bg-emerald-50 text-emerald-700"
-            : "bg-blue-50 text-blue-700",
-        ].join(" ")}
-      >
-        {status}
-      </span>
+            <p className="text-sm font-semibold text-slate-800">
+              {currentStepTitle}
+            </p>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

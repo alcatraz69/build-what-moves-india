@@ -12,6 +12,9 @@ import {
   retryStep,
 } from "./services/journeyService";
 import type { Journey } from "./types/journey";
+import { SiteHeader } from "./components/Layout/SiteHeader";
+import { SiteFooter } from "./components/Layout/SiteFooter";
+import { JourneyCompleted } from "./components/Journey/JourneyCompleted";
 
 function App() {
   const [applicantId, setApplicantId] = useState<string | null>(() =>
@@ -209,101 +212,51 @@ function App() {
   );
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
-      <section className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
-        <JourneyHeader
-          status={journey.status}
-          currentStepTitle={currentStep?.title ?? "Journey completed"}
-        />
+    <div className="min-h-screen bg-slate-50">
+      <SiteHeader />
+      <main className="px-4 py-10 sm:px-6">
+        <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
+          <JourneyHeader
+            status={journey.status}
+            currentStepTitle={currentStep?.title ?? "Journey completed"}
+          />
 
-        <JourneyProgress
-          completedSteps={completedSteps}
-          totalSteps={journey.steps.length}
-        />
+          <JourneyProgress
+            completedSteps={completedSteps}
+            totalSteps={journey.steps.length}
+          />
 
-        <JourneyAssistant applicantId={journey.applicantId} />
+          <JourneyAssistant applicantId={journey.applicantId} />
 
-        <div className="mt-8">
-          {journey.steps.map((step, index) => (
-            <JourneyStep
-              key={step.id}
-              step={step}
-              index={index}
-              learnerLicenceIssuedAt={journey.learnerLicenceIssuedAt}
-              onCompleteRequirement={handleCompleteRequirement}
-              completingRequirementId={completingRequirementId}
-              onCompleteStep={() => handleCompleteStep(step.id)}
-              completingStep={completingStepId === step.id}
-              onSimulateWaitingPeriod={handleSimulateWaitingPeriod}
-              onRetryStep={() => handleRetryStep(step.id)}
-              retryingStep={retryingStepId === step.id}
-            />
-          ))}
-        </div>
-
-        {isJourneyCompleted && (
-          <div className="mt-8 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50">
-            <div className="px-6 py-8 text-center sm:px-10 sm:py-10">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
-                ✓
-              </div>
-
-              <h2 className="mt-5 text-2xl font-bold tracking-tight text-emerald-950">
-                Journey completed
-              </h2>
-
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-emerald-800">
-                You've completed all the steps in your driving licence journey.
-                Great work!
-              </p>
-
-              <div className="mx-auto mt-6 max-w-sm rounded-xl border border-emerald-200 bg-white p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
-                      ✓
-                    </div>
-
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-slate-900">
-                        Journey progress
-                      </p>
-
-                      <p className="text-xs text-slate-500">
-                        All required steps completed
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="text-sm font-bold text-emerald-700">
-                    {completedSteps}/{journey.steps.length}
-                  </span>
-                </div>
-
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full w-full rounded-full bg-emerald-500"
-                    aria-hidden="true"
-                  />
-                </div>
-              </div>
-
-              <p className="mt-6 text-xs text-emerald-700">
-                Your personalized journey is complete.
-              </p>
-
-              <button
-                type="button"
-                onClick={handleBackToHome}
-                className="mt-5 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                Start a new journey →
-              </button>
-            </div>
+          <div className="mt-8">
+            {journey.steps.map((step, index) => (
+              <JourneyStep
+                key={step.id}
+                step={step}
+                index={index}
+                learnerLicenceIssuedAt={journey.learnerLicenceIssuedAt}
+                onCompleteRequirement={handleCompleteRequirement}
+                completingRequirementId={completingRequirementId}
+                onCompleteStep={() => handleCompleteStep(step.id)}
+                completingStep={completingStepId === step.id}
+                onSimulateWaitingPeriod={handleSimulateWaitingPeriod}
+                onRetryStep={() => handleRetryStep(step.id)}
+                retryingStep={retryingStepId === step.id}
+              />
+            ))}
           </div>
-        )}
-      </section>
-    </main>
+
+          {isJourneyCompleted && (
+            <JourneyCompleted
+              completedSteps={completedSteps}
+              totalSteps={journey.steps.length}
+              onStartNewJourney={handleBackToHome}
+            />
+          )}
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
 

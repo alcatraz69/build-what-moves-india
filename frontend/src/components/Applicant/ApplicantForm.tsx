@@ -3,7 +3,6 @@ import type {
   CreateApplicantRequest,
   VehicleType,
 } from "../../types/applicant";
-import { FormSection } from "./FormSection";
 import { VehicleTypeCard } from "./VehicleTypeCard";
 
 type ApplicantFormProps = {
@@ -133,15 +132,7 @@ export function ApplicantForm({ onSubmit, loading }: ApplicantFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormSection
-        title="About you"
-        description="We'll use these details to check your eligibility."
-      >
-        {/* existing Age field */}
-
-        {/* existing State field */}
-
-        {/* existing City field */}
+   
 
         <div className="space-y-1.5">
           <label
@@ -243,7 +234,7 @@ export function ApplicantForm({ onSubmit, loading }: ApplicantFormProps) {
             </p>
           )}
         </div>
-      </FormSection>
+     
 
       {/* existing first licence checkbox */}
 

@@ -10,9 +10,11 @@ import {
   createJourney,
 } from "../../services/applicantService";
 import type { Journey } from "../../types/journey";
-import OnboardingProgress from "./OnboardingProgress";
+// import OnboardingProgress from "./OnboardingProgress";
 import { EligibilitySuccess } from "./EligibilitySuccess";
 import { EligibilityFailure } from "./EligibilityFailure";
+import { SiteHeader } from "../Layout/SiteHeader";
+import { SiteFooter } from "../Layout/SiteFooter";
 
 type ApplicantPageProps = {
   onJourneyCreated: (journey: Journey) => void;
@@ -69,43 +71,110 @@ export function ApplicantPage({ onJourneyCreated }: ApplicantPageProps) {
     }
   };
 
-  return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
-      <section className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
-        <div className="mb-8">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-slate-500">
-            Saarathi 2.0
-          </p>
 
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Find your path to a driving licence
-          </h1>
+    return (
+    <div className="min-h-screen bg-slate-50">
+      <SiteHeader />
 
-          <p className="mt-2 text-slate-500">
-            Tell us a little about yourself and we'll guide you through the
-            journey.
-          </p>
-        </div>
+      <main className="px-4 py-6 sm:px-6 lg:px-8">
+        <section className="mx-auto grid max-w-7xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:min-h-[calc(100vh-190px)] lg:grid-cols-2">
 
-        <OnboardingProgress />
+          {/* LEFT: Hero */}
+          <div className="relative flex flex-col justify-center overflow-hidden bg-blue-800 px-6 py-10 sm:px-10 lg:px-12">
+            <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-white/5" />
+            <div className="absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-white/5" />
 
-        {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
+            <div className="relative max-w-xl">
+              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-blue-50">
+                Driving Licence Services
+              </span>
+
+              <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Your driving licence journey, simplified.
+              </h1>
+
+              <p className="mt-4 max-w-lg text-base leading-7 text-blue-100">
+                Check your eligibility, understand what's required, and follow
+                every step of your application from start to finish.
+              </p>
+
+              <div className="mt-8 space-y-4">
+                <div className="flex items-center gap-3 text-sm text-blue-50">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs">
+                    ✓
+                  </span>
+                  <span>Check your eligibility</span>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm text-blue-50">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs">
+                    ✓
+                  </span>
+                  <span>Follow a personalized journey</span>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm text-blue-50">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs">
+                    ✓
+                  </span>
+                  <span>Get guidance with AI assistance</span>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
 
-        {failures.length > 0 && <EligibilityFailure failures={failures} />}
+          {/* RIGHT: Application */}
+          <div
+            id="application-form"
+            className="flex items-center px-6 py-8 sm:px-10 lg:px-12"
+          >
+            <div className="w-full">
+              <div className="mb-6">
+                <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+                  Get started
+                </p>
 
-        {eligibleApplicant ? (
-          <EligibilitySuccess
-            loading={loading}
-            onStartJourney={handleStartJourney}
-          />
-        ) : (
-          <ApplicantForm onSubmit={handleSubmit} loading={loading} />
-        )}
-      </section>
-    </main>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+                  Start your application
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Tell us a little about yourself and we'll check your
+                  eligibility.
+                </p>
+              </div>
+
+              {/* <OnboardingProgress /> */}
+
+              {error && (
+                <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+
+              {failures.length > 0 && (
+                <EligibilityFailure failures={failures} />
+              )}
+
+              {eligibleApplicant ? (
+                <EligibilitySuccess
+                  loading={loading}
+                  onStartJourney={handleStartJourney}
+                />
+              ) : (
+                <ApplicantForm
+                  onSubmit={handleSubmit}
+                  loading={loading}
+                />
+              )}
+            </div>
+          </div>
+
+        </section>
+      </main>
+
+      <SiteFooter />
+    </div>
   );
 }
+  
