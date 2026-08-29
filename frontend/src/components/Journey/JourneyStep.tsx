@@ -3,6 +3,8 @@ import { RequirementList } from "./RequirementList";
 import { WaitingPeriod } from "./WaitingPeriod";
 import { PaymentStep } from "./PaymentStep";
 import { LearnerTest } from "./LearnerTest";
+import { DrivingTest } from "./DrivingTest";
+import { DrivingLicenceIssued } from "./DrivingLicenceIssued";
 
 type JourneyStepProps = {
   step: JourneyStepType;
@@ -214,12 +216,26 @@ export function JourneyStep({
             <LearnerTest completing={completingStep} onPass={onCompleteStep} />
           )}
 
+          {isAvailable && step.type === "DrivingTest" && (
+            <DrivingTest completing={completingStep} onPass={onCompleteStep} />
+          )}
+
+          {isAvailable && step.type === "DlIssued" && (
+            <DrivingLicenceIssued
+              referenceNumber={referenceNumber}
+              completing={completingStep}
+              onComplete={onCompleteStep}
+            />
+          )}
+
           {/* Action step */}
           {isAvailable &&
             presentation !== "status" &&
             step.type !== "LlPayment" &&
             step.type !== "DlPayment" &&
-            step.type !== "LlTest" && (
+            step.type !== "LlTest" &&
+            step.type !== "DrivingTest" &&
+            step.type !== "DlIssued" && (
               <button
                 type="button"
                 disabled={completingStep || hasIncompleteRequirements}
