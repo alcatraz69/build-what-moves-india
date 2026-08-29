@@ -6,6 +6,8 @@ public class ApplicantResponse
 {
     public Guid Id { get; set; }
 
+    public string ReferenceNumber { get; set; } = string.Empty;
+
     public int Age { get; set; }
 
     public string State { get; set; } = string.Empty;

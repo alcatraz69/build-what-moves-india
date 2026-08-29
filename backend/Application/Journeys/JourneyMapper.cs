@@ -10,6 +10,7 @@ public static class JourneyMapper
         {
             Id = journey.Id,
             ApplicantId = journey.ApplicantId,
+            ReferenceNumber = $"SAR-{journey.ApplicantId.ToString("N")[..6].ToUpperInvariant()}",
             JourneyType = journey.JourneyType,
             Status = journey.Status,
             CurrentStep = journey.CurrentStep,

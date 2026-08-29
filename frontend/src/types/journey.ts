@@ -32,6 +32,7 @@ export type JourneyStep = {
 export type Journey = {
   id: string;
   applicantId: string;
+  referenceNumber: string;
   journeyType: string;
   status: string;
   currentStep: string;

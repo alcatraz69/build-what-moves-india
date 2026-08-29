@@ -23,4 +23,5 @@ export type Applicant = {
   vehicleTypes: VehicleType[];
   isEligible: boolean;
   failures: RuleFailure[];
+  referenceNumber: string;
 };

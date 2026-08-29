@@ -1,11 +1,13 @@
 type JourneyHeaderProps = {
   status: string;
   currentStepTitle: string;
+  referenceNumber: string;
 };
 
 export function JourneyHeader({
   status,
   currentStepTitle,
+  referenceNumber,
 }: JourneyHeaderProps) {
   const isCompleted = status === "Completed";
 
@@ -32,6 +34,16 @@ export function JourneyHeader({
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
             Complete each step to move through your licence application.
           </p>
+
+          <div className="mt-4 flex items-center gap-2">
+            <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
+              Application reference
+            </span>
+
+            <span className="rounded-md bg-slate-100 px-2 py-1 font-mono text-xs font-semibold text-slate-700">
+              {referenceNumber}
+            </span>
+          </div>
         </div>
 
         <span

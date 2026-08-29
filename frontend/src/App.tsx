@@ -219,6 +219,7 @@ function App() {
           <JourneyHeader
             status={journey.status}
             currentStepTitle={currentStep?.title ?? "Journey completed"}
+            referenceNumber={journey.referenceNumber}
           />
 
           <JourneyProgress
@@ -242,6 +243,7 @@ function App() {
                 onSimulateWaitingPeriod={handleSimulateWaitingPeriod}
                 onRetryStep={() => handleRetryStep(step.id)}
                 retryingStep={retryingStepId === step.id}
+                referenceNumber={journey.referenceNumber}
               />
             ))}
           </div>

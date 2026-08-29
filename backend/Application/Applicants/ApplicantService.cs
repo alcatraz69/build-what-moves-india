@@ -44,6 +44,7 @@ public class ApplicantService
             State = applicant.State,
             City = applicant.City,
             IsFirstLicence = applicant.IsFirstLicence,
+            ReferenceNumber = GetReferenceNumber(applicant.Id),
             VehicleTypes = applicant.VehicleTypes,
             IsEligible = eligibilityResult.IsEligible,
             Failures = eligibilityResult.Failures
@@ -77,6 +78,7 @@ public class ApplicantService
             IsFirstLicence = applicant.IsFirstLicence,
             VehicleTypes = applicant.VehicleTypes,
             IsEligible = eligibilityResult.IsEligible,
+            ReferenceNumber = GetReferenceNumber(applicant.Id),
             Failures = eligibilityResult.Failures
                 .Select(failure => new RuleFailureResponse
                 {
@@ -86,5 +88,10 @@ public class ApplicantService
                 })
                 .ToList()
         };
+    }
+
+    private static string GetReferenceNumber(Guid id)
+    {
+        return $"SAR-{id.ToString("N")[..6].ToUpperInvariant()}";
     }
 }

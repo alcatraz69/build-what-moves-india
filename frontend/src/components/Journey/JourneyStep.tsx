@@ -1,6 +1,8 @@
 import type { JourneyStep as JourneyStepType } from "../../types/journey";
 import { RequirementList } from "./RequirementList";
 import { WaitingPeriod } from "./WaitingPeriod";
+import { PaymentStep } from "./PaymentStep";
+import { LearnerTest } from "./LearnerTest";
 
 type JourneyStepProps = {
   step: JourneyStepType;
@@ -13,6 +15,7 @@ type JourneyStepProps = {
   onRetryStep: () => void;
   retryingStep: boolean;
   onSimulateWaitingPeriod: () => void;
+  referenceNumber: string;
 };
 
 type StepPresentation = "action" | "requirements" | "status";
@@ -70,6 +73,7 @@ export function JourneyStep({
   onRetryStep,
   retryingStep,
   onSimulateWaitingPeriod,
+  referenceNumber,
 }: JourneyStepProps) {
   const isCompleted = step.status === "Completed";
   const isAvailable = step.status === "Available";
@@ -77,8 +81,7 @@ export function JourneyStep({
   const isFailed = step.status === "Failed";
 
   const hasIncompleteRequirements = step.requirements.some(
-    (requirement) =>
-      requirement.required && requirement.status !== "Completed",
+    (requirement) => requirement.required && requirement.status !== "Completed",
   );
 
   const presentation = getStepPresentation(step.type);
@@ -197,17 +200,35 @@ export function JourneyStep({
               />
             )}
 
-          {/* Action step */}
-          {isAvailable && presentation !== "status" && (
-            <button
-              type="button"
-              disabled={completingStep || hasIncompleteRequirements}
-              onClick={onCompleteStep}
-              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {completingStep ? "Completing..." : actionLabel}
-            </button>
+          {isAvailable &&
+            (step.type === "LlPayment" || step.type === "DlPayment") && (
+              <PaymentStep
+                type={step.type}
+                referenceNumber={referenceNumber}
+                completing={completingStep}
+                onPay={onCompleteStep}
+              />
+            )}
+
+          {isAvailable && step.type === "LlTest" && (
+            <LearnerTest completing={completingStep} onPass={onCompleteStep} />
           )}
+
+          {/* Action step */}
+          {isAvailable &&
+            presentation !== "status" &&
+            step.type !== "LlPayment" &&
+            step.type !== "DlPayment" &&
+            step.type !== "LlTest" && (
+              <button
+                type="button"
+                disabled={completingStep || hasIncompleteRequirements}
+                onClick={onCompleteStep}
+                className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {completingStep ? "Completing..." : actionLabel}
+              </button>
+            )}
         </div>
       </div>
     </article>

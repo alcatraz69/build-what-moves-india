@@ -7,6 +7,7 @@ public class JourneyResponse
     public Guid Id { get; set; }
 
     public Guid ApplicantId { get; set; }
+    public string ReferenceNumber { get; set; } = string.Empty;
 
     public JourneyType JourneyType { get; set; }
 
